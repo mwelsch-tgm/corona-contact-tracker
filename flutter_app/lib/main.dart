@@ -96,6 +96,7 @@ class MyDataBody extends StatefulWidget{
 }
 
 class _MyDataState extends State<MyDataBody>{
+  TextEditingController messageController = TextEditingController();
   @override
   Widget build(BuildContext context) {
     return Center(
@@ -111,10 +112,49 @@ class _MyDataState extends State<MyDataBody>{
             ),
           ),
           const SizedBox(height: 30),
-
+          RaisedButton(
+            onPressed: positiveTest,
+            child: new Text(
+                "Positive test",
+                style: TextStyle(fontSize: 20)
+            ),
+          ),
+          const SizedBox(height: 30),
+          RaisedButton(
+            onPressed: negativeTest,
+            child: new Text(
+                "Negative test",
+                style: TextStyle(fontSize: 20)
+            ),
+          ),
+          const SizedBox(height: 30),
+          RaisedButton(
+            onPressed: noTest,
+            child: new Text(
+                "No test",
+                style: TextStyle(fontSize: 20)
+            ),
+          ),
+          TextField(
+            controller: messageController,
+            decoration: InputDecoration(
+              border: OutlineInputBorder(),
+              labelText: 'Bluetooth MAC',
+            ),
+          )
         ],
       ),
     );
+  }
+
+  void positiveTest(){
+    DeviceWithAppDatabaseProvider.db.addDeviceToDatabase(new DeviceWithApp(messageController.text, DateTime.now().toIso8601String().toString(), "positive test"));
+  }
+  void negativeTest(){
+    DeviceWithAppDatabaseProvider.db.addDeviceToDatabase(new DeviceWithApp(messageController.text, DateTime.now().toIso8601String().toString(), "negative test"));
+  }
+  void noTest(){
+    DeviceWithAppDatabaseProvider.db.addDeviceToDatabase(new DeviceWithApp(messageController.text, DateTime.now().toIso8601String().toString(), "not tested"));
   }
 
   void scanButton(){

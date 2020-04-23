@@ -77,7 +77,7 @@ class DeviceWithApp{
   final String time;
   final String status;
 
-  DeviceWithApp(this.mac, this.time, this.status);
+  DeviceWithApp(this.time, this.mac, this.status);
 
   factory DeviceWithApp.fromMap(Map<String, dynamic> json) => new DeviceWithApp(
     json["time"],
@@ -112,9 +112,10 @@ class DeviceWithAppDatabaseProvider {
     String path = join(await getDatabasesPath(), "devices.db");
     return await openDatabase(path, version: 1,
         onCreate: (Database db, int version) async {
-          await db.execute("CREATE TABLE FoundDevice ("
+          await db.execute("CREATE TABLE DeviceWithApp ("
               "time TEXT PRIMARY KEY,"
-              "mac TEXT"
+              "mac TEXT,"
+              "status TEXT"
               ")");
         });
   }
@@ -122,7 +123,7 @@ class DeviceWithAppDatabaseProvider {
   addDeviceToDatabase(DeviceWithApp device) async {
     final db = await database;
     var raw = await db.insert(
-      "FoundDevice",
+      "DeviceWithApp",
       device.toMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
@@ -133,14 +134,14 @@ class DeviceWithAppDatabaseProvider {
 
   Future<List<DeviceWithApp>> getAllDevicesWithApp() async {
     final db = await database;
-    var response = await db.query("FoundDevice");
-    List<FoundDevice> list = response.map((c) => FoundDevice.fromMap(c)).toList();
+    var response = await db.query("DeviceWithApp");
+    List<DeviceWithApp> list = response.map((c) => DeviceWithApp.fromMap(c)).toList();
     return list;
   }
 
 
   deleteAllFoundDevice() async {
     final db = await database;
-    db.delete("FoundDevice");
+    db.delete("DeviceWithApp");
   }
 }

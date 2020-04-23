@@ -65,17 +65,50 @@ class StatisticsBody extends StatefulWidget{
   _StatisticsBodyState createState() => _StatisticsBodyState();
 }
 
+
 class _StatisticsBodyState extends State<StatisticsBody>{
+  Future<List<FoundDevice>> foundDevices;
+  List<DeviceWithApp> devicesWithApp;
+
+  ScrollController scrollController = new ScrollController();
+
+  Future<List<FoundDevice>> initFutures() async {
+    devicesWithApp = await DeviceWithAppDatabaseProvider.db.getAllDevicesWithApp();
+    return FoundDeviceDatabaseProvider.db.getAllFoundDevices();
+  }
+
+  @override
+  void initState(){
+    super.initState();
+    foundDevices = initFutures();
+  }
+
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
     return FutureBuilder<List<FoundDevice>>(
-      future: FoundDeviceDatabaseProvider.db.getAllFoundDevices(),
+      future: foundDevices,
       builder: (BuildContext context, AsyncSnapshot<List<FoundDevice>> snapshot) {
         if (snapshot.hasData){
-          String s = "Total Database entries: "+snapshot.data.length.toString();
-          s += ;
-          return Center(child: Text(s));
+          List<Widget> entries = new List();
+          entries.add(new Text("Total Database entries: "+snapshot.data.length.toString()));
+          for(FoundDevice foundDevice in snapshot.data){
+            for(DeviceWithApp deviceWithApp in devicesWithApp){
+              print("?"+deviceWithApp.mac);
+              print(foundDevice.mac);
+              if(deviceWithApp.mac == foundDevice.mac){
+                entries.add(new Text("MAC Match! Contact date: "+foundDevice.time + " Entrie time of status: " + deviceWithApp.time + " Status: " + deviceWithApp.status));
+              }
+            }
+          }
+
+          //s += ;
+          return ListView(
+            controller: scrollController,
+          children: <Widget>[
+            ...entries,
+          ],
+          );
         }
         else {
           return Center(child: CircularProgressIndicator());
