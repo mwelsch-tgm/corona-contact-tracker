@@ -175,7 +175,10 @@ class _MyDataState extends State<MyDataBody>{
       else{
         scan().then((succes)  {
           if(succes){
-            widget.scanning = true;
+            setState(() {
+              widget.scanning = true;
+            });
+
           }
           else{
             Fluttertoast.showToast(
@@ -209,15 +212,21 @@ Future<bool> scan() async {
   if(! await flutterBlue.isAvailable || ! await flutterBlue.isOn || ! await Permission.location.request().isGranted){
     return false;
   }
-  scanSubscription = flutterBlue.scanResults.listen((results) {
-    // do something with scan results
-    for (ScanResult r in results) {
-      print('${r.device.name} found! rssi: ${r.rssi}');
-      print(r.device.id.toString());
-      FoundDeviceDatabaseProvider.db.addFoundDeviceToDatabase(new FoundDevice(DateTime.now().toIso8601String().toString(), r.device.id.toString()));
-    }
-  });
-  flutterBlue.startScan();
+  try{
+    scanSubscription = flutterBlue.scanResults.listen((results) {
+      // do something with scan results
+      for (ScanResult r in results) {
+        print('${r.device.name} found! rssi: ${r.rssi}');
+        print(r.device.id.toString());
+        FoundDeviceDatabaseProvider.db.addFoundDeviceToDatabase(new FoundDevice(DateTime.now().toIso8601String().toString(), r.device.id.toString()));
+      }
+    });
+    flutterBlue.startScan();
+  } catch (e){
+    stopScan();
+    return false;
+  }
+
   return true;
 }
 

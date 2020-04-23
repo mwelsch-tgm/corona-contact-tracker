@@ -83,6 +83,12 @@ class _StatisticsBodyState extends State<StatisticsBody>{
     foundDevices = initFutures();
   }
 
+  void refreshing() async{
+    await synchronizeDBs();
+    setState(() {
+      initFutures();
+    });
+  }
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
@@ -91,6 +97,14 @@ class _StatisticsBodyState extends State<StatisticsBody>{
       builder: (BuildContext context, AsyncSnapshot<List<FoundDevice>> snapshot) {
         if (snapshot.hasData){
           List<Widget> entries = new List();
+          entries.add(RaisedButton(
+            onPressed: refreshing,
+            child: new Text(
+                "Refresh",
+                style: TextStyle(fontSize: 20)
+            ),
+          ));
+
           entries.add(new Text("Total Database entries: "+snapshot.data.length.toString()));
           for(FoundDevice foundDevice in snapshot.data){
             for(DeviceWithApp deviceWithApp in devicesWithApp){
