@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/database.dart';
 import 'package:flutter_app/statistics.dart';
 import 'package:flutter_blue/flutter_blue.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:path/path.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:postgres/postgres.dart';
 import 'package:sqflite/sqflite.dart';
 
 
@@ -149,23 +151,45 @@ class _MyDataState extends State<MyDataBody>{
 
   void positiveTest(){
     DeviceWithAppDatabaseProvider.db.addDeviceToDatabase(new DeviceWithApp(messageController.text, DateTime.now().toIso8601String().toString(), "positive test"));
+    synchronizeDBs();
   }
   void negativeTest(){
     DeviceWithAppDatabaseProvider.db.addDeviceToDatabase(new DeviceWithApp(messageController.text, DateTime.now().toIso8601String().toString(), "negative test"));
+    synchronizeDBs();
   }
   void noTest(){
     DeviceWithAppDatabaseProvider.db.addDeviceToDatabase(new DeviceWithApp(messageController.text, DateTime.now().toIso8601String().toString(), "not tested"));
+    synchronizeDBs();
   }
 
+
+
   void scanButton(){
+
     setState(() {
+
       if(widget.scanning){
         stopScan();
         widget.scanning = false;
       }
       else{
-        scan();
-        widget.scanning = true;
+        scan().then((succes)  {
+          if(succes){
+            widget.scanning = true;
+          }
+          else{
+            Fluttertoast.showToast(
+                msg: "Bluetooth needs to be enabled and permissions need to be granted",
+                toastLength: Toast.LENGTH_LONG,
+                gravity: ToastGravity.CENTER,
+                timeInSecForIosWeb: 1,
+                backgroundColor: Colors.red,
+                textColor: Colors.white,
+                fontSize: 16.0
+            );
+
+          }
+        });
       }
     });
     }
@@ -178,13 +202,13 @@ void stopScan(){
   flutterBlue.stopScan();
 }
 
-Future<void> scan() async {
+Future<bool> scan() async {
   var status = await Permission.location.status;
 
-  FoundDeviceDatabaseProvider.db.getDatabaseInstance();
-
-  print(await Permission.location.request().isGranted);
   print(status);
+  if(! await flutterBlue.isAvailable || ! await flutterBlue.isOn || ! await Permission.location.request().isGranted){
+    return false;
+  }
   scanSubscription = flutterBlue.scanResults.listen((results) {
     // do something with scan results
     for (ScanResult r in results) {
@@ -194,6 +218,30 @@ Future<void> scan() async {
     }
   });
   flutterBlue.startScan();
+  return true;
 }
 
+Future<void> synchronizeDBs() async {
+  var connection = new PostgreSQLConnection("welsch.pro", 2943, "corona", username: "dart", password: "21370huijs01");
+  await connection.open();
+  //TABLES have to exist!!!!!!!!!1
+  /*
+  CREATE TABLE devices (time TEXT PRIMARY KEY, mac TEXT, status TEXT);
+   */
+  List<DeviceWithApp> localEntries = await DeviceWithAppDatabaseProvider.db.getAllDevicesWithApp();
+  List<List<dynamic>> devices = await connection.query("SELECT * FROM devices");
+  List<DeviceWithApp> serverEntries = new List();
+  for(final row in devices){
+    serverEntries.add(new DeviceWithApp(row[0], row[1], row[2]));
+  }
+  for(DeviceWithApp device in localEntries){
+    if(!serverEntries.contains(device))
+      await connection.query("INSERT INTO devices (time, mac, status) VALUES ('"+device.time+"','"+device.mac+"','"+device.status+"') ON CONFLICT DO NOTHING");
+  }
+  for(DeviceWithApp device in serverEntries){
+    if(!localEntries.contains(device))
+      localEntries.add(device);
+  }
 
+
+}

@@ -22,6 +22,8 @@ environment:
 
 dependencies:
   flutter_blue: "^0.7.2"
+  postgres: "2.1.1"
+  fluttertoast: ^4.0.0
   flutter:
     sdk: flutter
   sqflite:

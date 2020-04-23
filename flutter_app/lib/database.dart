@@ -22,6 +22,20 @@ class FoundDevice{
     };
   }
 
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+          other is FoundDevice &&
+              runtimeType == other.runtimeType &&
+              time == other.time &&
+              mac == other.mac;
+
+  @override
+  int get hashCode =>
+      time.hashCode ^
+      mac.hashCode;
+
+
 }
 
 class FoundDeviceDatabaseProvider {
@@ -92,6 +106,22 @@ class DeviceWithApp{
       'status' : status,
     };
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+          other is DeviceWithApp &&
+              runtimeType == other.runtimeType &&
+              mac == other.mac &&
+              time == other.time &&
+              status == other.status;
+
+  @override
+  int get hashCode =>
+      mac.hashCode ^
+      time.hashCode ^
+      status.hashCode;
+
 
 }
 
