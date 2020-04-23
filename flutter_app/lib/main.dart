@@ -150,15 +150,15 @@ class _MyDataState extends State<MyDataBody>{
   }
 
   void positiveTest(){
-    DeviceWithAppDatabaseProvider.db.addDeviceToDatabase(new DeviceWithApp(messageController.text, DateTime.now().toIso8601String().toString(), "positive test"));
+    DeviceWithAppDatabaseProvider.db.addDeviceToDatabase(new DeviceWithApp(DateTime.now().toIso8601String().toString(),messageController.text, "positive test"));
     synchronizeDBs();
   }
   void negativeTest(){
-    DeviceWithAppDatabaseProvider.db.addDeviceToDatabase(new DeviceWithApp(messageController.text, DateTime.now().toIso8601String().toString(), "negative test"));
+    DeviceWithAppDatabaseProvider.db.addDeviceToDatabase(new DeviceWithApp(DateTime.now().toIso8601String().toString(),messageController.text, "negative test"));
     synchronizeDBs();
   }
   void noTest(){
-    DeviceWithAppDatabaseProvider.db.addDeviceToDatabase(new DeviceWithApp(messageController.text, DateTime.now().toIso8601String().toString(), "not tested"));
+    DeviceWithAppDatabaseProvider.db.addDeviceToDatabase(new DeviceWithApp(DateTime.now().toIso8601String().toString(),messageController.text, "not tested"));
     synchronizeDBs();
   }
 
